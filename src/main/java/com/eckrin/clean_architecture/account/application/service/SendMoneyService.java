@@ -17,12 +17,10 @@ class SendMoneyService implements SendMoneyUseCase { // incoming port interface
     @Override
     @Transactional
     public void loadAccount() {
-        outPort.getAccountInfo();
     }
 
     @Override
     @Transactional
     public void updateAccountState() {
-
     }
 }
