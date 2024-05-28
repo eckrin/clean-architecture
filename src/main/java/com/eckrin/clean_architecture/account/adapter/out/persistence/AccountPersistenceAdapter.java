@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 영속성 어댑터 - 애플리케이션의 아웃고잉 포트를 구현
+ */
 @Component
 @RequiredArgsConstructor
 public class AccountPersistenceAdapter implements LoadAccountPort, UpdateAccountStatePort {
@@ -20,6 +23,9 @@ public class AccountPersistenceAdapter implements LoadAccountPort, UpdateAccount
     private final SpringDataActivityRepository activityRepository;
     private final AccountMapper accountMapper;
 
+    /**
+     * 계좌 정보와, 해당 계좌의 특정 기간동안 활동 불러오기
+     */
     @Override
     public Account getAccountInfo(Long accountId, LocalDateTime date) {
         AccountEntity account = accountRepository.findById(accountId).orElseThrow(()->new RuntimeException("AccountEntity Not Found"));
