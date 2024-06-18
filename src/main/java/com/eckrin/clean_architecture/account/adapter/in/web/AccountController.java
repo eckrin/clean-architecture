@@ -1,10 +1,13 @@
 package com.eckrin.clean_architecture.account.adapter.in.web;
 
+import com.eckrin.clean_architecture.account.application.port.in.SendMoneyCommand;
 import com.eckrin.clean_architecture.account.application.port.in.SendMoneyUseCase;
+import com.eckrin.clean_architecture.account.domain.Account;
+import com.eckrin.clean_architecture.account.domain.Money;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.eckrin.clean_architecture.account.domain.Account.*;
 
 @RestController
 @RequestMapping("/account")
@@ -13,11 +16,17 @@ public class AccountController {
 
     private final SendMoneyUseCase sendMoneyUseCase;
 
-    @GetMapping("/test")
-    public String test() {
+    @PostMapping(path = "/accounts/send/{sourceAccountId}/{targetAccountId}/{amount}")
+    void sendMoney(
+            @PathVariable("sourceAccountId") Long sourceAccountId,
+            @PathVariable("targetAccountId") Long targetAccountId,
+            @PathVariable("amount") Long amount) {
 
-        sendMoneyUseCase.loadAccount();
+        SendMoneyCommand command = new SendMoneyCommand(
+                new AccountId(sourceAccountId),
+                new AccountId(targetAccountId),
+                Money.of(amount));
 
-        return "success";
+        sendMoneyUseCase.sendMoney(command);
     }
 }

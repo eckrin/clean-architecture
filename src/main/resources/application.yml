@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: clean_architecture
+
+eckrin:
+  transferThreshold: 10000

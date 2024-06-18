@@ -2,11 +2,12 @@ package com.eckrin.clean_architecture.account.application.port.out;
 
 import com.eckrin.clean_architecture.account.domain.Account;
 
-import java.time.LocalDateTime;
-
 import static com.eckrin.clean_architecture.account.domain.Account.*;
 
-public interface LoadAccountPort {
+public interface AccountLock {
 
-    Account loadAccount(AccountId accountId, LocalDateTime baselineDate);
+	void lockAccount(AccountId accountId);
+
+	void releaseAccount(AccountId accountId);
+
 }

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.eckrin.clean_architecture.account.domain.Account.*;
+
 /**
  * 영속성 어댑터 - 애플리케이션의 아웃고잉 포트를 구현
  */
@@ -23,17 +25,36 @@ public class AccountPersistenceAdapter implements LoadAccountPort, UpdateAccount
     private final SpringDataActivityRepository activityRepository;
     private final AccountMapper accountMapper;
 
-    /**
-     * 계좌 정보와, 해당 계좌의 특정 기간동안 활동 불러오기
-     */
     @Override
-    public Account getAccountInfo(Long accountId, LocalDateTime date) {
-        AccountEntity account = accountRepository.findById(accountId).orElseThrow(()->new RuntimeException("AccountEntity Not Found"));
-        List<ActivityEntity> activities = activityRepository.findByOwnerSince(accountId, date);
-        Long withdrawalBalance = orZero(activityRepository.getWithdrawalBalanceUntil(accountId, date));
-        Long depositBalance = orZero(activityRepository.getDepositBalanceUntil(accountId, date));
+    public Account loadAccount(
+            AccountId accountId,
+            LocalDateTime baselineDate) {
 
-        return accountMapper.mapToDomainEntity(account, activities, withdrawalBalance, depositBalance);
+        AccountEntity account =
+                accountRepository.findById(accountId.getValue())
+                        .orElseThrow(RuntimeException::new);
+
+        List<ActivityEntity> activities =
+                activityRepository.findByOwnerSince(
+                        accountId.getValue(),
+                        baselineDate);
+
+        Long withdrawalBalance = orZero(activityRepository
+                .getWithdrawalBalanceUntil(
+                        accountId.getValue(),
+                        baselineDate));
+
+        Long depositBalance = orZero(activityRepository
+                .getDepositBalanceUntil(
+                        accountId.getValue(),
+                        baselineDate));
+
+        return accountMapper.mapToDomainEntity(
+                account,
+                activities,
+                withdrawalBalance,
+                depositBalance);
+
     }
 
     @Override
@@ -48,6 +69,5 @@ public class AccountPersistenceAdapter implements LoadAccountPort, UpdateAccount
     private Long orZero(Long value) {
         return value==null?0L:value;
     }
-
 
 }

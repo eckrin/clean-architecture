@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Value;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * 도메인 엔티티는 다양한 상태 변경 메서드를 가질 수 있다 (풍부한 도메인 모델 채용)
@@ -18,6 +19,10 @@ public class Account {
     private final AccountId id;
     private final ActivityWindow activityWindow;
     private final Money balance;
+
+    public Optional<AccountId> getId(){
+        return Optional.ofNullable(this.id);
+    }
 
     public static Account createAccountWithoutId(Money balance, ActivityWindow activityWindow) {
         return new Account(null, activityWindow, balance);
@@ -55,6 +60,17 @@ public class Account {
                         this.calculateBalance(),
                         money.negate())
                 .isPositiveOrZero();
+    }
+
+    public boolean deposit(Money money, AccountId sourceAccountId) {
+        Activity deposit = new Activity(
+                this.id,
+                sourceAccountId,
+                this.id,
+                LocalDateTime.now(),
+                money);
+        this.activityWindow.addActivity(deposit);
+        return true;
     }
 
     public Money calculateBalance() {
