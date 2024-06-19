@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * 계좌의 활동을 기록
  */
 @Entity
-@Table(name = "activities")
+@Table(name = "activity")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
