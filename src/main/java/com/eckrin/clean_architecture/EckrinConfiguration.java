@@ -1,4 +1,4 @@
-package com.eckrin;
+package com.eckrin.clean_architecture;
 
 import com.eckrin.clean_architecture.account.application.service.MoneyTransferProperties;
 import com.eckrin.clean_architecture.account.domain.Money;
