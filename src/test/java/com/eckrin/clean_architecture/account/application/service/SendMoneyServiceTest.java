@@ -6,9 +6,19 @@ import com.eckrin.clean_architecture.account.application.port.out.LoadAccountPor
 import com.eckrin.clean_architecture.account.application.port.out.UpdateAccountStatePort;
 import com.eckrin.clean_architecture.account.domain.Account;
 import com.eckrin.clean_architecture.account.domain.Money;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,19 +30,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 
+/**
+ * Mockito.mock(*.class) 대신 @MockBean 사용한 예시
+ * - Junit5에서는 @Runwith가 아닌 @ExtendWith 사용
+ * - SendMoneyService에 필요한 moneyTransferProperties는 ReflectionTestUtils를 사용하여 주입
+ * - MockitoExtension사용시 UnnecessaryStubbingException 발생 가능 (givenDepositWillSucceed는 givenWithdrawalFails_thenOnlySourceAccountIsLockedAndReleased()에서 필요하지 않으므로 제거)
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class SendMoneyServiceTest {
 
-	private final LoadAccountPort loadAccountPort =
-			Mockito.mock(LoadAccountPort.class);
+    @Autowired
+    private MockMvc mockMvc;
 
-	private final AccountLock accountLock =
-			Mockito.mock(AccountLock.class);
+    @MockBean
+	private LoadAccountPort loadAccountPort;
 
-	private final UpdateAccountStatePort updateAccountStatePort =
-			Mockito.mock(UpdateAccountStatePort.class);
+    @MockBean
+	private AccountLock accountLock;
 
-	private final SendMoneyService sendMoneyService =
-			new SendMoneyService(loadAccountPort, updateAccountStatePort, accountLock, moneyTransferProperties());
+    @MockBean
+	private UpdateAccountStatePort updateAccountStatePort;
+
+    @Autowired
+	private SendMoneyService sendMoneyService;
+
+    @BeforeEach
+    public void setup() {
+        // Mockito 초기화
+        MockitoAnnotations.openMocks(this);
+
+        // sendMoneyService에 MoneyTransferProperties 주입
+        ReflectionTestUtils.setField(sendMoneyService, "moneyTransferProperties", moneyTransferProperties());
+    }
 
 	@Test
 	void givenWithdrawalFails_thenOnlySourceAccountIsLockedAndReleased() {
@@ -41,10 +72,9 @@ class SendMoneyServiceTest {
 		Account sourceAccount = givenAnAccountWithId(sourceAccountId);
 
 		AccountId targetAccountId = new AccountId(42L);
-		Account targetAccount = givenAnAccountWithId(targetAccountId);
+		givenAnAccountWithId(targetAccountId);
 
 		givenWithdrawalWillFail(sourceAccount);
-		givenDepositWillSucceed(targetAccount);
 
 		SendMoneyCommand command = new SendMoneyCommand(
 				sourceAccountId,
